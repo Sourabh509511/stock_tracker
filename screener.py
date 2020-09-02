@@ -11,11 +11,10 @@ data["timestamp"]=pandas.to_datetime(data["timestamp"])
 
 data.set_index('timestamp',inplace=True)
 
-df2 = data.resample('4s').agg({"Open":'first','High':'max','Low':'min','Close':"last","Volume":'sum'})
+df2 = data.resample('15Min').mean()
+# df2=data.dropna(thresh=2)
 
-df2=data.dropna(thresh=2)
-
-
+# print(df2)
 previous_low=0
 previous_high=0
 
@@ -23,7 +22,7 @@ full_data={}
 for a in range(len(df2["Low"])):
     rows=[]
     row=df2.iloc[a]
-    rows.append(str(row["Date"])[0:10])
+    rows.append(str(row.name)[0:10])
     rows.append(row["Low"])
     rows.append(row["High"])
     full_data[a]=rows
@@ -34,16 +33,19 @@ for i in range(1,len(full_data)):
         current_high=full_data[i][2]
         value=0
         a=i
-        while(full_data[a][2]<full_data[a-1][2] or full_data[a][0]!=full_data[a-1][0]):
-            previous_high=full_data[a-1][2]
-            print(f"current high value {full_data[a][2]}")
-            print(f"last high value {full_data[a-1][2]}")
-            print(f"date is {full_data[a][0]}")
-            value=full_data[a][2]
-            try:
-                a+=1
-            except Exception as e:
-                print(e)
+        try:
+            while(full_data[a][2]<full_data[a-1][2] or full_data[a][0]!=full_data[a-1][0]):
+                previous_high=full_data[a-1][2]
+                print(f"current high value {full_data[a][2]} \t",end="")
+                print(f"last high value {full_data[a-1][2]}\t",end="")
+                print(f"date is {full_data[a][0]}")
+                value=full_data[a][2]
+                try:
+                    a+=1
+                except Exception as e:
+                    print(e)
+        except Exception as e:
+            pass
         if value-current_high>0:
             print(f"profit of {value-current_high}")
         elif current_high== value:
